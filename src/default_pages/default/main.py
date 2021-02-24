@@ -7,6 +7,23 @@ port = os.getenv('PORT')
 USER_PAGES_DIR = "./pages"
 DEFAULT_PAGES_DIR = "./default_pages"
 
+
+@st.cache(allow_output_mutation=True)
+def get_base64_of_bin_file(bin_file):
+    with open(bin_file, 'rb') as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
+
+@st.cache(allow_output_mutation=True)
+def get_img_with_href(local_img_path, target_url,width):
+    img_format = os.path.splitext(local_img_path)[-1].replace('.', '')
+    bin_str = get_base64_of_bin_file(local_img_path)
+    html_code = f'''
+        <a href="{target_url}">
+            <img src="data:image/{img_format};base64,{bin_str}" width={width} />
+        </a>'''
+    return html_code
+
 def load_pages(num_cols, PAGES_DIR):
     pages = os.listdir(PAGES_DIR)
     for i in range(0,len(pages),num_cols):
@@ -23,10 +40,10 @@ def load_pages(num_cols, PAGES_DIR):
             else:
                 page_path = pages[i+j]
 
-            with open("{}/{}/thumb.png".format(PAGES_DIR,pages[i+j]), "rb") as img_file:
-                b64_image = base64.b64encode(img_file.read()).decode('utf-8')
+            img_html = get_img_with_href("{}/{}/thumb.png".format(PAGES_DIR,pages[i+j]), 'http://{}:{}/{}'.format(dns_name,port,page_path),"107px")
 
-            cols[j].markdown("[![Image description](data:image/png;base64,{})](http://{}:{}/{}) {}".format(b64_image,dns_name,port,page_path,pages[i+j].capitalize()))
+            cols[j].markdown(img_html, unsafe_allow_html=True)
+            cols[j].text(pages[i+j].capitalize())
 
             print("Page added to list: {}".format(pages[i+j]))
 

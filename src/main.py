@@ -49,6 +49,7 @@ class StreamlitPages():
                                             "--server.port", str(port),
                                             "--server.headless","true", 
                                             "--browser.gatherUsageStats", "false",
+                                            "--browser.serverAddress", os.getenv('DNS_NAME'),
                                              page_path],))
                                             #  stdout=subprocess.PIPE))
 
