@@ -1,8 +1,9 @@
 import streamlit as st
 import os
 import base64
+import json
 
-dns_name = os.getenv('DNS_NAME')
+DNS_NAME = os.getenv('DNS_NAME')
 port = os.getenv('PORT')
 USER_PAGES_DIR = "./pages"
 DEFAULT_PAGES_DIR = "./default_pages"
@@ -29,7 +30,6 @@ def load_pages(num_cols, PAGES_DIR):
     for i in range(0,len(pages),num_cols):
         if i >= len(pages):
             break
-
         cols = st.beta_columns(num_cols)
         for j in range(0,num_cols):
             if (i+j) >= len(pages):
@@ -40,14 +40,25 @@ def load_pages(num_cols, PAGES_DIR):
             else:
                 page_path = pages[i+j]
 
-            img_html = get_img_with_href("{}/{}/thumb.png".format(PAGES_DIR,pages[i+j]), 'http://{}:{}/{}'.format(dns_name,port,page_path),"107px")
+            try:
+                with open(os.path.join(PAGES_DIR,pages[i+j],"config.json")) as json_file:
+                    app_config = json.load(json_file)
+                
+                if "PREFERRED_DNS" in app_config:
+                    DNS_NAME = app_config["PREFERRED_DNS"]
+                else:
+                    DNS_NAME = os.getenv('DNS_NAME')
+            except:
+                DNS_NAME = os.getenv('DNS_NAME')
+
+            img_html = get_img_with_href("{}/{}/thumb.png".format(PAGES_DIR,pages[i+j]), 'http://{}:{}/{}'.format(DNS_NAME,port,page_path),"107px")
 
             cols[j].markdown(img_html, unsafe_allow_html=True)
             cols[j].text(pages[i+j].capitalize())
 
             print("Page added to list: {}".format(pages[i+j]))
 
-                
+DNS_NAME = os.getenv('DNS_NAME')   
 
 st.markdown("""
 # Streamlit pages: Main menu
@@ -56,7 +67,7 @@ Here will be presented all of the pages stored in the 'pages' folder.
 
 For more information, visit this page: <http://{}:{}/howto>
 
-""".format(dns_name,port))
+""".format(DNS_NAME,port))
 
 num_cols = 4
 
