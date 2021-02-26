@@ -2,7 +2,7 @@ import subprocess
 import os
 import time
 import signal
-
+import json
 class StreamlitPages():
 
     def __init__(self, CONFIG_DIR, DEFAULT_PAGES_DIR, PAGES_DIR, BASE_PORT):
@@ -42,6 +42,14 @@ class StreamlitPages():
         # Loading pages with streamlit
         for i, page in enumerate(pages):
             page_path = os.path.join(directory,page,"main.py")
+            with open(os.path.join(directory,page,"config.json")) as json_file:
+                app_config = json.load(json_file)
+            
+            if "PREFERRED_DNS" in app_config:
+                DNS_NAME = app_config["PREFERRED_DNS"]
+            else:
+                DNS_NAME = os.getenv('DNS_NAME')
+
             port = BASE_PORT+i
 
             # Create um subprocess for each folder
@@ -49,7 +57,7 @@ class StreamlitPages():
                                             "--server.port", str(port),
                                             "--server.headless","true", 
                                             "--browser.gatherUsageStats", "false",
-                                            "--browser.serverAddress", os.getenv('DNS_NAME'),
+                                            "--browser.serverAddress", DNS_NAME,
                                              page_path],))
                                             #  stdout=subprocess.PIPE))
 
