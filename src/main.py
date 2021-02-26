@@ -42,12 +42,15 @@ class StreamlitPages():
         # Loading pages with streamlit
         for i, page in enumerate(pages):
             page_path = os.path.join(directory,page,"main.py")
-            with open(os.path.join(directory,page,"config.json")) as json_file:
-                app_config = json.load(json_file)
-            
-            if "PREFERRED_DNS" in app_config:
-                DNS_NAME = app_config["PREFERRED_DNS"]
-            else:
+            try:
+                with open(os.path.join(directory,page,"config.json")) as json_file:
+                    app_config = json.load(json_file)
+                
+                if "PREFERRED_DNS" in app_config:
+                    DNS_NAME = app_config["PREFERRED_DNS"]
+                else:
+                    DNS_NAME = os.getenv('DNS_NAME')
+            except:
                 DNS_NAME = os.getenv('DNS_NAME')
 
             port = BASE_PORT+i
